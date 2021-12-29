@@ -1,0 +1,12 @@
+---
+# tasks file for init
+
+# - name: copy files from local to remote
+#   copy:
+#     src: files/test.txt
+#     dest: /etc/test/test.txt
+
+- name: copy hosts to /etc/hosts
+  copy:
+    src: files/hosts
+    dest: /etc/hosts

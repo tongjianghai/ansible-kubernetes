@@ -1,0 +1,7 @@
+---
+- name: nodes setup
+  hosts: nodes
+
+  tasks:
+    - include_role:
+        name: init

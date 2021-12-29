@@ -1,0 +1,7 @@
+---
+- name: master setup
+  hosts: master
+
+  tasks:
+    - include_role:
+        name: init
