@@ -1,20 +1,25 @@
 ---
 # tasks file for init
 
-- name: install chrony
+- name: install chrony ipset ipvsadm
   become: yes
   yum:
     name:
-      - chrony
+      - "{{ item }}"
     state: present
+  with_items:
+    - chrony
+    - ipset
+    - ipvsadm
 
 - name: copy hosts to /etc/hosts
   become: yes
   copy:
-    src: files/{{ item }}
-    dest: /etc/{{ item }}
+    src: "files/{{ item }}"
+    dest: "/etc/{{ item }}"
   with_items:
     - hosts
+    - fstab
 
 - name: change timezone
   become: yes
@@ -27,5 +32,43 @@
   become: yes
   service:
     name: chronyd
-    state: restarted
+    state: started
     enabled: yes
+
+- name: stop firewalld iptables
+  become: yes
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - firewalld
+
+- name: disable selinux
+  become: yes
+  selinux:
+    state: disabled
+
+- name: modprobe br_netfilter
+  become: yes
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+  with_items:
+    - ip_vs
+    - ip_vs_rr
+    - ip_vs_wrr
+    - ip_vs_sh
+    - nf_conntrack_ipv4
+
+
+- name: bridge net filter and ip forward
+  become: yes
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    state: present
+  with_items:
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.ip_forward
