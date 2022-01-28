@@ -4,3 +4,8 @@ node2
 
 [controller]
 master
+
+[all]
+master
+node1
+node2

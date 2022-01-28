@@ -5,3 +5,5 @@
   tasks:
     - include_role:
         name: init
+    - include_role:
+        name: docker

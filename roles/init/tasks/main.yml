@@ -21,6 +21,18 @@
     - hosts
     - fstab
 
+- name: copy ipvs modules to /etc/sysconfig/modules
+  become: yes
+  ansible.builtin.copy:
+    src: "files/ipvs.modules"
+    dest: "/etc/sysconfig/modules/ipvs.modules"
+
+- name: chmod +x /etc/sysconfig/modules/ipvs.modules
+  become: yes
+  file:
+    path: /etc/sysconfig/modules/ipvs.modules
+    mode: +x
+
 - name: change timezone
   become: yes
   file:
@@ -52,9 +64,10 @@
 - name: modprobe br_netfilter
   become: yes
   community.general.modprobe:
-    name: br_netfilter
+    name: "{{ item }}"
     state: present
   with_items:
+    - br_netfilter
     - ip_vs
     - ip_vs_rr
     - ip_vs_wrr
@@ -72,3 +85,4 @@
     - net.bridge.bridge-nf-call-ip6tables
     - net.bridge.bridge-nf-call-iptables
     - net.ipv4.ip_forward
+

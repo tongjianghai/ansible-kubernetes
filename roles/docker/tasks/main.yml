@@ -1,0 +1,21 @@
+---
+# tasks file for docker
+
+- name: wget aliyun docker repo
+  become: yes
+  ansible.builtin.get_url: 
+    url="https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo"
+    dest="/etc/yum.repos.d/docker-ce.repo"
+
+- name: install docker
+  become: yes
+  shell: yum install --setopt=obsoletes=0 docker-ce-18.06.3.ce-3.el7 -y
+  register: docker_install
+  changed_when: "'Nothing to do' not in docker_install.stdout"
+
+- name: mkdir /etc/docker
+  become: yes
+  file:
+    path: /etc/docker
+    state: directory
+     
