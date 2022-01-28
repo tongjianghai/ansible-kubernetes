@@ -1,0 +1,8 @@
+{
+    "exec-opts": [
+        "native.cgroupdriver=systemd"
+    ],
+    "registry-mirrors": [
+        "https://kn0t2bca.mirror.aliyuncs.com"
+    ]
+}

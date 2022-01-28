@@ -18,4 +18,55 @@
   file:
     path: /etc/docker
     state: directory
+
+- name: copy /etc/docker/daemon.json
+  become: yes
+  ansible.builtin.copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: start docker
+  become: yes
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: copy /etc/yum.repos.d/kubernetes.repo
+  become: yes
+  ansible.builtin.copy:
+    src: files/kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+
+- name: install kubeadm kubelet kubectl
+  become: yes
+  shell: yum -y install --setopt=obsoletes=0 kubeadm-1.17.4-0 kubelet-1.17.4-0 kubectl-1.17.4-0
+  register: kube_install
+  changed_when: "'Nothing to do' not in kube_install.stdout"
+
+- name: copy /etc/sysconfig/kubelet
+  become: yes
+  ansible.builtin.copy:
+    src: files/kubelet
+    dest: /etc/sysconfig/kubelet
+
+- name: start kubelet
+  become: yes
+  ansible.builtin.service:
+    name: kubelet
+    state: stopped
+    enabled: yes
+
+- name: copy kube images shell
+  become: yes
+  ansible.builtin.copy:
+    src: files/kube_images.sh
+    dest: /root/kube_images.sh
+
+- name: run kube_images.sh
+  become: yes
+  ansible.builtin.shell: bash /root/kube_images.sh
+  register: kube_images
+  changed_when: "'Downloaded newer image' not in kube_images.stdout"
+
      

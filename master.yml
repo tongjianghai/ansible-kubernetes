@@ -8,3 +8,7 @@
     
     - include_role:
         name: docker
+
+    - name: kubeadm init
+      become: yes
+      shell: kubeadm init --kubernetes-version=
