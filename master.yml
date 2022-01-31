@@ -8,7 +8,38 @@
     
     - include_role:
         name: docker
+    
+    - name: whether port 6443 is in use
+      become: yes
+      shell: netstat -tunlp | grep 6443
+      register: kubeadm_init
+      changed_when: "'6443' not in kubeadm_init.stdout"
 
     - name: kubeadm init
       become: yes
-      shell: kubeadm init --kubernetes-version=
+      shell: kubeadm init --kubernetes-version=v1.17.4 
+        --pod-network-cidr=10.244.0.0/16 
+        --service-cidr=10.96.0.0/12
+        --apiserver-advertise-address={{ master }}
+      when: "'6443' not in kubeadm_init.stdout"
+
+    
+    - name: mkdir $HOME/.kube
+      become: yes
+      file:
+        path: $HOME/.kube
+        state: directory
+  
+    - name: copy kubeconfig
+      become: yes
+      copy: 
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+
+    - name: change kubeconfig file permission
+      become: yes
+      file:
+        path: $HOME/.kube/config 
+        owner: "{{ ansible_effective_user_id }}"
+        group: "{{ ansible_effective_group_id }}"
