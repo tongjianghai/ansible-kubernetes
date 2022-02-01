@@ -54,7 +54,7 @@
   become: yes
   ansible.builtin.service:
     name: kubelet
-    state: stopped
+    state: started
     enabled: yes
 
 - name: copy kube images shell

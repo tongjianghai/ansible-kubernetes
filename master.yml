@@ -11,16 +11,13 @@
     
     - name: whether port 6443 is in use
       become: yes
-      shell: netstat -tunlp | grep 6443
+      shell: netstat -tunlp | grep 6443 || echo 1
       register: kubeadm_init
       changed_when: "'6443' not in kubeadm_init.stdout"
 
     - name: kubeadm init
       become: yes
-      shell: kubeadm init --kubernetes-version=v1.17.4 
-        --pod-network-cidr=10.244.0.0/16 
-        --service-cidr=10.96.0.0/12
-        --apiserver-advertise-address={{ master }}
+      shell: kubeadm init --kubernetes-version=v1.17.4 --pod-network-cidr=10.244.0.0/16 --service-cidr=10.96.0.0/12 --apiserver-advertise-address={{ master }}
       when: "'6443' not in kubeadm_init.stdout"
 
     
@@ -43,3 +40,15 @@
         path: $HOME/.kube/config 
         owner: "{{ ansible_effective_user_id }}"
         group: "{{ ansible_effective_group_id }}"
+
+    - name: copy kube-flannel.yml
+      become: yes
+      ansible.builtin.copy:
+        src: files/kube-flannel.yml
+        dest: /etc/kubernetes/kube-flannel.yml
+    
+    - name: start flannel
+      become: yes
+      ansible.builtin.shell:
+        kubectl apply -f /etc/kubernetes/kube-flannel.yml
+      when: "'6443' not in kubeadm_init.stdout"
